@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "*": ["types/*"] },
+    "outDir": "./",
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "target": "es3",
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "lib": ["es2015", "es2015.generator", "scripthost", "es2015.iterable"]
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules"]
+}
