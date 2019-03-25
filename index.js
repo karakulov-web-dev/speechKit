@@ -18,7 +18,6 @@ var Api = /** @class */ (function () {
         app.post("/getSpeech", function (req, res) {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            console.log(JSON.stringify(req.body));
             if (typeof _this.cachedTextStore[req.body.text] !== "undefined") {
                 res.send(JSON.stringify({
                     url: "http://212.77.128.177:8081/files/" +

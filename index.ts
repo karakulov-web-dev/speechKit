@@ -27,8 +27,6 @@ class Api {
         "Origin, X-Requested-With, Content-Type, Accept"
       );
 
-      console.log(JSON.stringify(req.body));
-
       if (typeof this.cachedTextStore[req.body.text] !== "undefined") {
         res.send(
           JSON.stringify({
