@@ -1,10 +1,7 @@
 import express from "express";
 import axios from "axios";
 import { exec } from "child_process";
-import { type } from "os";
-import { text } from "body-parser";
 import fs from "fs";
-import { debug } from "util";
 
 interface CachedTextStore {
   [text: string]: {
@@ -13,12 +10,21 @@ interface CachedTextStore {
   };
 }
 
-const config = {
+let prodaction = true;
+
+const configDev = {
   protocol: "http://",
   ip: "localhost",
   port: "8081",
-  soxPath: "/bin/sox.exe"
+  soxPath: `${__dirname}/bin/sox.exe`
 };
+const configProdaction = {
+  protocol: "http://",
+  ip: "212.77.128.177",
+  port: "8081",
+  soxPath: "sox"
+};
+const config = prodaction ? configProdaction : configDev;
 
 class Api {
   private cachedTextStore: CachedTextStore;
@@ -28,6 +34,18 @@ class Api {
     const app = express();
     app.use(express.json());
     app.use("/files", express.static(__dirname + "/files"));
+
+    this.createApiPoint_getSpeech(app);
+
+    app.listen(8081);
+    console.log("speechKit started on port 8081");
+  }
+
+  /**
+   * Делит текст по разделителям: (. ! , ?)
+   * с сохранением их в тексте
+   */
+  private createApiPoint_getSpeech(app: express.Express) {
     app.post("/getSpeech", (req, res) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header(
@@ -61,14 +79,7 @@ class Api {
         };
       });
     });
-    app.listen(8081);
-    console.log("speechKit started on port 8081");
   }
-
-  /**
-   * Делит текст по разделителям: (. ! , ?)
-   * с сохранением их в тексте
-   */
   private split(text: string): string[] {
     return text
       .replace(/[\.!,?]/g, t => {
@@ -91,14 +102,12 @@ class Api {
     let idListCopy: string[] = JSON.parse(JSON.stringify(idList));
     this.itararionLoadingChunk(textChunks, idList, () => {
       exec(
-        `${__dirname}${config.soxPath} ${idListCopy.join(" ")} ${"./files/" +
-          fileName}`,
+        `${config.soxPath} ${idListCopy.join(" ")} ${"./files/" + fileName}`,
         (err, stdout, stderr) => {
           if (err) {
             console.error(err);
             return;
           }
-          console.log(stdout);
           cb();
         }
       );

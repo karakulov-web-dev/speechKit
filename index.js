@@ -7,12 +7,20 @@ var express_1 = __importDefault(require("express"));
 var axios_1 = __importDefault(require("axios"));
 var child_process_1 = require("child_process");
 var fs_1 = __importDefault(require("fs"));
-var config = {
+var prodaction = true;
+var configDev = {
     protocol: "http://",
     ip: "localhost",
     port: "8081",
-    soxPath: "/bin/sox.exe"
+    soxPath: __dirname + "/bin/sox.exe"
 };
+var configProdaction = {
+    protocol: "http://",
+    ip: "212.77.128.177",
+    port: "8081",
+    soxPath: "sox"
+};
+var config = prodaction ? configProdaction : configDev;
 var Api = /** @class */ (function () {
     function Api() {
         var _this = this;
@@ -68,13 +76,11 @@ var Api = /** @class */ (function () {
         });
         var idListCopy = JSON.parse(JSON.stringify(idList));
         this.itararionLoadingChunk(textChunks, idList, function () {
-            child_process_1.exec("" + __dirname + config.soxPath + " " + idListCopy.join(" ") + " " + ("./files/" +
-                fileName), function (err, stdout, stderr) {
+            child_process_1.exec(config.soxPath + " " + idListCopy.join(" ") + " " + ("./files/" + fileName), function (err, stdout, stderr) {
                 if (err) {
                     console.error(err);
                     return;
                 }
-                console.log(stdout);
                 cb();
             });
             setTimeout(function () {
