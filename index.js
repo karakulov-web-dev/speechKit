@@ -7,6 +7,12 @@ var express_1 = __importDefault(require("express"));
 var axios_1 = __importDefault(require("axios"));
 var child_process_1 = require("child_process");
 var fs_1 = __importDefault(require("fs"));
+var config = {
+    protocol: "http://",
+    ip: "localhost",
+    port: "8081",
+    soxPath: "/bin/sox.exe"
+};
 var Api = /** @class */ (function () {
     function Api() {
         var _this = this;
@@ -20,7 +26,7 @@ var Api = /** @class */ (function () {
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             if (typeof _this.cachedTextStore[req.body.text] !== "undefined") {
                 res.send(JSON.stringify({
-                    url: "http://212.77.128.177:8081/files/" +
+                    url: "" + config.protocol + config.ip + ":" + config.port + "/files/" +
                         _this.cachedTextStore[req.body.text].fileName
                 }));
                 return;
@@ -28,7 +34,7 @@ var Api = /** @class */ (function () {
             var textChunks = _this.split(req.body.text);
             var fileName = _this.createSpeechFile(textChunks, function () {
                 res.send(JSON.stringify({
-                    url: "http://212.77.128.177:8081/files/" + fileName
+                    url: "" + config.protocol + config.ip + ":" + config.port + "/files/" + fileName
                 }));
                 _this.cachedTextStore[req.body.text] = {
                     fileName: fileName,
@@ -72,7 +78,8 @@ var Api = /** @class */ (function () {
         });
         var idListCopy = JSON.parse(JSON.stringify(idList));
         this.itararionLoadingChunk(textChunks, idList, function () {
-            child_process_1.exec("sox " + idListCopy.join(" ") + " " + ("./files/" + fileName), function (err, stdout, stderr) {
+            child_process_1.exec("" + __dirname + config.soxPath + " " + idListCopy.join(" ") + " " + ("./files/" +
+                fileName), function (err, stdout, stderr) {
                 if (err) {
                     console.error(err);
                     return;

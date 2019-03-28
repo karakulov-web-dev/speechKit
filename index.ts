@@ -4,6 +4,7 @@ import { exec } from "child_process";
 import { type } from "os";
 import { text } from "body-parser";
 import fs from "fs";
+import { debug } from "util";
 
 interface CachedTextStore {
   [text: string]: {
@@ -11,6 +12,13 @@ interface CachedTextStore {
     time: number;
   };
 }
+
+const config = {
+  protocol: "http://",
+  ip: "localhost",
+  port: "8081",
+  soxPath: "/bin/sox.exe"
+};
 
 class Api {
   private cachedTextStore: CachedTextStore;
@@ -31,19 +39,20 @@ class Api {
         res.send(
           JSON.stringify({
             url:
-              "http://212.77.128.177:8081/files/" +
+              `${config.protocol}${config.ip}:${config.port}/files/` +
               this.cachedTextStore[req.body.text].fileName
           })
         );
         return;
       }
 
-      let textChunks: any = this.split(req.body.text);
+      let textChunks: string[] = this.split(req.body.text);
 
       let fileName = this.createSpeechFile(textChunks, () => {
         res.send(
           JSON.stringify({
-            url: "http://212.77.128.177:8081/files/" + fileName
+            url:
+              `${config.protocol}${config.ip}:${config.port}/files/` + fileName
           })
         );
         this.cachedTextStore[req.body.text] = {
@@ -90,7 +99,8 @@ class Api {
     let idListCopy: string[] = JSON.parse(JSON.stringify(idList));
     this.itararionLoadingChunk(textChunks, idList, () => {
       exec(
-        `sox ${idListCopy.join(" ")} ${"./files/" + fileName}`,
+        `${__dirname}${config.soxPath} ${idListCopy.join(" ")} ${"./files/" +
+          fileName}`,
         (err, stdout, stderr) => {
           if (err) {
             console.error(err);
