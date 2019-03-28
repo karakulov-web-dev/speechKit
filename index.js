@@ -23,12 +23,21 @@ var configProdaction = {
 var config = prodaction ? configProdaction : configDev;
 var Api = /** @class */ (function () {
     function Api() {
-        var _this = this;
         this.cachedTextStore = {};
         this.clearCacheServise();
         var app = express_1["default"]();
         app.use(express_1["default"].json());
         app.use("/files", express_1["default"].static(__dirname + "/files"));
+        this.createApiPoint_getSpeech(app);
+        app.listen(8081);
+        console.log("speechKit started on port 8081");
+    }
+    /**
+     * Делит текст по разделителям: (. ! , ?)
+     * с сохранением их в тексте
+     */
+    Api.prototype.createApiPoint_getSpeech = function (app) {
+        var _this = this;
         app.post("/getSpeech", function (req, res) {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -40,8 +49,9 @@ var Api = /** @class */ (function () {
                 return;
             }
             var textChunks = _this.split(req.body.text);
-            var fileName = _this.createSpeechFile(textChunks, function () {
+            var fileName = _this.createSpeechFile(textChunks, function (err) {
                 res.send(JSON.stringify({
+                    error: err,
                     url: "" + config.protocol + config.ip + ":" + config.port + "/files/" + fileName
                 }));
                 _this.cachedTextStore[req.body.text] = {
@@ -50,19 +60,18 @@ var Api = /** @class */ (function () {
                 };
             });
         });
-        app.listen(8081);
-        console.log("speechKit started on port 8081");
-    }
-    /**
-     * Делит текст по разделителям: (. ! , ?)
-     * с сохранением их в тексте
-     */
+    };
     Api.prototype.split = function (text) {
         return text
-            .replace(/[\.!,?]/g, function (t) {
+            .replace(/[\.!?]/g, function (t) {
             return t + "|";
         })
-            .split("|");
+            .split("|")
+            .filter(function (string) {
+            if (/[a-z|A-Z|0-9|А-Я|а-я]/.test(string)) {
+                return true;
+            }
+        });
     };
     Api.prototype.createSpeechFile = function (textChunks, cb) {
         var id = Math.random()
@@ -77,11 +86,7 @@ var Api = /** @class */ (function () {
         var idListCopy = JSON.parse(JSON.stringify(idList));
         this.itararionLoadingChunk(textChunks, idList, function () {
             child_process_1.exec(config.soxPath + " " + idListCopy.join(" ") + " " + ("./files/" + fileName), function (err, stdout, stderr) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                cb();
+                cb(err);
             });
             setTimeout(function () {
                 idListCopy.forEach(function (item) {

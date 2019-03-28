@@ -66,9 +66,10 @@ class Api {
 
       let textChunks: string[] = this.split(req.body.text);
 
-      let fileName = this.createSpeechFile(textChunks, () => {
+      let fileName = this.createSpeechFile(textChunks, (err: string) => {
         res.send(
           JSON.stringify({
+            error: err,
             url:
               `${config.protocol}${config.ip}:${config.port}/files/` + fileName
           })
@@ -82,10 +83,15 @@ class Api {
   }
   private split(text: string): string[] {
     return text
-      .replace(/[\.!,?]/g, t => {
+      .replace(/[\.!?]/g, t => {
         return t + "|";
       })
-      .split("|");
+      .split("|")
+      .filter(string => {
+        if (/[a-z|A-Z|0-9|А-Я|а-я]/.test(string)) {
+          return true;
+        }
+      });
   }
   private createSpeechFile(textChunks: string[], cb: Function) {
     let id = Math.random()
@@ -104,11 +110,7 @@ class Api {
       exec(
         `${config.soxPath} ${idListCopy.join(" ")} ${"./files/" + fileName}`,
         (err, stdout, stderr) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          cb();
+          cb(err);
         }
       );
       setTimeout(function() {
