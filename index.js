@@ -45,26 +45,16 @@ var Api = /** @class */ (function () {
         app.listen(8081);
         console.log("speechKit started on port 8081");
     }
+    /**
+     * Делит текст по разделителям: (. ! , ?)
+     * с сохранением их в тексте
+     */
     Api.prototype.split = function (text) {
-        var words = text.split(" ");
-        var index = 0;
-        var wordsGrout = words.reduce(function (acum, word) {
-            if (typeof acum[index] !== "undefined") {
-                if (acum[index].length > 20) {
-                    index++;
-                }
-            }
-            if (typeof acum[index] !== "undefined") {
-                acum[index].push(word);
-            }
-            else {
-                acum[index] = [word];
-            }
-            return acum;
-        }, []);
-        return wordsGrout.map(function (item) {
-            return item.join(" ");
-        });
+        return text
+            .replace(/[\.!,?]/g, function (t) {
+            return t + "|";
+        })
+            .split("|");
     };
     Api.prototype.createSpeechFile = function (textChunks, cb) {
         var id = Math.random()

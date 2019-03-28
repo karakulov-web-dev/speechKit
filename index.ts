@@ -64,25 +64,17 @@ class Api {
     app.listen(8081);
     console.log("speechKit started on port 8081");
   }
-  private split(text: string) {
-    let words = text.split(" ");
-    let index = 0;
-    let wordsGrout: string[][] = words.reduce((acum: string[][], word) => {
-      if (typeof acum[index] !== "undefined") {
-        if (acum[index].length > 20) {
-          index++;
-        }
-      }
-      if (typeof acum[index] !== "undefined") {
-        acum[index].push(word);
-      } else {
-        acum[index] = [word];
-      }
-      return acum;
-    }, []);
-    return wordsGrout.map(item => {
-      return item.join(" ");
-    });
+
+  /**
+   * Делит текст по разделителям: (. ! , ?)
+   * с сохранением их в тексте
+   */
+  private split(text: string): string[] {
+    return text
+      .replace(/[\.!,?]/g, t => {
+        return t + "|";
+      })
+      .split("|");
   }
   private createSpeechFile(textChunks: string[], cb: Function) {
     let id = Math.random()
