@@ -20,7 +20,7 @@ const configDev = {
 };
 const configProdaction = {
   protocol: "http://",
-  ip: "212.77.128.177",
+  ip: "212.77.128.203",
   port: "8081",
   soxPath: "sox"
 };
