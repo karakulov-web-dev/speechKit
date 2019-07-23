@@ -26,7 +26,7 @@ var Api = /** @class */ (function () {
         this.cachedTextStore = {};
         this.clearCacheServise();
         var app = express_1["default"]();
-        app.use(express_1["default"].json());
+        app.use(express_1["default"].json({ type: "*/*" }));
         app.use("/files", express_1["default"].static(__dirname + "/files"));
         this.createApiPoint_getSpeech(app);
         app.listen(8081);
@@ -39,11 +39,12 @@ var Api = /** @class */ (function () {
     Api.prototype.createApiPoint_getSpeech = function (app) {
         var _this = this;
         app.post("/getSpeech", function (req, res) {
+            console.log(req);
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             if (typeof _this.cachedTextStore[req.body.text] !== "undefined") {
                 res.send(JSON.stringify({
-                    url: "" + config.protocol + config.ip + ":" + config.port + "/files/" +
+                    url: "" + config.protocol + config.ip + "/nodejsapp/speechKit/files/" +
                         _this.cachedTextStore[req.body.text].fileName
                 }));
                 return;
@@ -52,7 +53,8 @@ var Api = /** @class */ (function () {
             var fileName = _this.createSpeechFile(textChunks, function (err) {
                 res.send(JSON.stringify({
                     error: err,
-                    url: "" + config.protocol + config.ip + ":" + config.port + "/files/" + fileName
+                    url: "" + config.protocol + config.ip + "/nodejsapp/speechKit/files/" +
+                        fileName
                 }));
                 _this.cachedTextStore[req.body.text] = {
                     fileName: fileName,

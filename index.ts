@@ -32,7 +32,7 @@ class Api {
     this.cachedTextStore = {};
     this.clearCacheServise();
     const app = express();
-    app.use(express.json());
+    app.use(express.json({ type: "*/*" }));
     app.use("/files", express.static(__dirname + "/files"));
 
     this.createApiPoint_getSpeech(app);
@@ -47,6 +47,7 @@ class Api {
    */
   private createApiPoint_getSpeech(app: express.Express) {
     app.post("/getSpeech", (req, res) => {
+      console.log(req);
       res.header("Access-Control-Allow-Origin", "*");
       res.header(
         "Access-Control-Allow-Headers",
@@ -57,7 +58,7 @@ class Api {
         res.send(
           JSON.stringify({
             url:
-              `${config.protocol}${config.ip}:${config.port}/files/` +
+              `${config.protocol}${config.ip}/nodejsapp/speechKit/files/` +
               this.cachedTextStore[req.body.text].fileName
           })
         );
@@ -71,7 +72,8 @@ class Api {
           JSON.stringify({
             error: err,
             url:
-              `${config.protocol}${config.ip}:${config.port}/files/` + fileName
+              `${config.protocol}${config.ip}/nodejsapp/speechKit/files/` +
+              fileName
           })
         );
         this.cachedTextStore[req.body.text] = {
